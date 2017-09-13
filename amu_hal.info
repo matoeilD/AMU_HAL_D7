@@ -1,0 +1,9 @@
+name = Amu HAL
+description = Affichage des publications - articles HAL AMU
+core = 7.x
+version = 7.x-3.5
+dependencies[] = drupal:multiblock
+dependencies[] = drupal:popup_descriptions
+dependencies[] = drupal:popup_ui
+dependencies[] = drupal:help
+

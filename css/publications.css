@@ -1,0 +1,324 @@
+/*------------------------------------*\
+  CONTENTS
+\*------------------------------------*/
+/**
+*  BLOCKS
+*   academic
+*   fancy
+*   skin
+*  MEDIA QUERIES
+*
+*/
+
+
+/*------------------------------------*\
+  ==BLOCKS
+\*------------------------------------*/
+
+
+.block-amu-hal {
+  border-radius: 3px;
+  background-color: rgb(233, 233, 233);
+}
+
+.block-amu-hal::before {
+  position: relative;
+  top: -3px;
+  left: 5%;
+  visibility: visible;
+  margin-left: -19px;
+  color: white;
+  content: "\f0d7  ";
+  font-size: 66px;
+  font-family: "FontAwesome";
+  line-height: 0;
+}
+
+li.hal-pub a {
+  color: #fff;
+  text-decoration: none;
+}
+
+/* academic  */
+/* ------------- */
+
+
+
+.hal-pub a {
+  word-break: break-all;
+}
+
+.hal-pub {
+  padding-right: 10px;
+}
+
+.not-front .block.block-amu-hal {
+  padding-left: 0;
+}
+
+#block-amu-hal-last-hal-publications .hal-pub-list {
+  padding-left: 0;
+}
+
+#block-amu-hal-last-hal-publications .hal-pub-list li {
+  list-style-type: none;
+}
+
+#block-amu-hal-last-hal-publications .hal-more-pub a {
+  display: block;
+  margin: 0 auto 20px auto;
+  max-width: 30%;
+}
+
+.hal-pub-list li {
+  margin: 15px 0 0 0;
+}
+
+.hal-pub-list li.hal-pub a,
+.highlighted .hal-pub-list li.hal-pub a {
+  border-bottom: inherit;
+  color: #333;
+}
+
+.highlighted .hal-pub-list li.hal-pub a:hover {
+  border-bottom: solid thin;
+}
+
+.region-content .content .hal-pub-list li a {
+  color: #333;
+}
+
+.block .hal-year-nav li {
+  display: inline-block;
+  list-style-type: none;
+}
+
+.hal_pub_doctype {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 2px;
+  border-radius: 2px;
+  font-weight: bold;
+  font-size: .7em;
+}
+
+.doc-authors,
+.doc-keywords {
+  padding-left: 0;
+}
+
+.doc-authors li::before,
+.doc-keywords li::before {
+  content: "- ";
+}
+
+.doc-authors li,
+.doc-keywords li {
+  display: inline;
+}
+
+.hal-year-nav {
+  display: flex;
+  margin-top: 20px;
+
+  flex-wrap: wrap;
+}
+
+/* fancy  */
+/* ------------- */
+
+ul.hal-pub-list-type-2 {
+  display: flex;
+  margin-left: -20px;
+  list-style: none;
+
+  flex-wrap: wrap;
+}
+
+
+
+ul.hal-pub-list-type-2 li {
+  flex-basis: calc(35% - 30px);
+}
+
+ul.hal-pub-list-type-2 li a {
+  background-color: #ffffff;
+}
+
+ul.hal-pub-list-type-2 li.hal-pub > a {
+  display: inline-block;
+  margin: 10px;
+  padding: 10px;
+  border-bottom: none;
+  color: inherit;
+  word-break: normal;
+}
+
+ul.hal-pub-list-type-2 li.hal-pub > a:hover {
+  border-bottom: none;
+}
+
+ul.hal-pub-list-type-2 .hal-pub__title {
+  margin-bottom: 10px;
+  font-weight: bold;
+  font-size: 1.3em;
+}
+
+ul.hal-pub-list-type-2 .hal-pub__authors {
+  margin-bottom: 10px;
+  padding-left: 0;
+  list-style: none;
+}
+
+ul.hal-pub-list-type-2 .hal-pub__authors li {
+  display: inline;
+}
+
+ul.hal-pub-list-type-2 .hal-pub__authors li::after {
+  content: ", ";
+}
+
+ul.hal-pub-list-type-2 .hal-pub__authors li:last-of-type::after {
+  content: " ";
+}
+
+
+.hal-more-pub a.more {
+  display: block;
+  margin: 0 auto 20px auto;
+  padding: 15px 23px;
+  border-radius: 25px;
+  flex: 0 0 auto;
+  color: #fff;
+  width: 25em;
+  text-align: center;
+  text-transform: uppercase;
+  transition: all 0.2s ease-in-out 0s;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.hal-more-pub a.more:hover {
+  opacity: 0.7;
+  text-decoration: none;
+}
+
+/* skin                                      */
+/* ------------------------------------------------------------------- */
+
+/*Default*/
+ul.hal-pub-list-type-2 li.hal-pub a:hover {
+  background-color: rgb(51, 51, 51);
+  color: rgb(255,255,255);
+}
+
+/*Pink */
+.hal-pink ul.hal-pub-list-type-2 li.hal-pub a:hover {
+  background-color: rgb(150,60,245);
+  color: rgb(255,255,255);
+}
+
+.hal-pink ul.hal-pub-list-type-2  a:hover .hal-pub__citation-ref {
+  color: rgb(180,180,180);
+}
+
+.hal-pink.block a.more {
+  background-color: rgb(150,60,245);
+}
+
+
+/*Bleu foncé */
+.hal-dark-blue ul.hal-pub-list-type-2 li.hal-pub a:hover {
+  background-color: rgb(18,72,114);
+  color: rgb(255,255,255);
+}
+
+.hal-dark-blue ul.hal-pub-list-type-2  a:hover .hal-pub__citation-ref {
+  color: rgb(180,180,180);
+}
+
+.hal-dark-blue.block a.more {
+  background-color: rgb(18,72,114);
+}
+
+/*Cyan*/
+.hal-cyan ul.hal-pub-list-type-2 li.hal-pub a:hover {
+  background-color: rgb(54,194,242);
+  color: rgb(255,255,255);
+}
+
+.hal-cyan.block .content a.more {
+  background-color: rgb(54,194,242);
+}
+
+/*orange*/
+.hal-orange ul.hal-pub-list-type-2 li.hal-pub a:hover {
+  background-color: rgb(222, 105, 0);
+  color: rgb(255,255,255);
+}
+
+.hal-orange.block .content a.more {
+  background-color: rgb(222, 105, 0);
+}
+
+
+
+@media (max-width: 767px) {
+  ul.hal-pub-list-type-2 li {
+    flex-basis: 100%;
+  }
+}
+
+/*back-office form*/
+
+.page-admin-structure-block-manage-multiblock textarea#edit-readonly {
+  cursor: default;
+  border: none;
+}
+
+.popup-style-white .popup-element-body div.inner a,
+.popup-style-white .popup-element-body div.inner a:hover{
+  color: #0071B9;
+}
+
+
+/*------------------------------------*\
+  ==MEDIA QUERIES
+\*------------------------------------*/
+
+
+
+/*@media (min-width: 767px) {*/
+/*.hal-year-nav {*/
+/*justify-content: space-between;*/
+/*}*/
+
+.block .hal-year-nav li {
+  display: block;
+  margin: 4px 5px;
+  padding: 4px 8px;
+  background-color: #D2D1D1;
+}
+
+.block .hal-year-nav li a {
+  border-bottom: inherit;
+}
+
+@media (max-width: 767px) {
+  #block-amu-hal-last-hal-publications .hal-pub {
+    margin-bottom: 30px;
+  }
+
+  .page-docs h1.title {
+    font-size: 1.8em;
+  }
+
+  .block .hal-year-nav > li {
+    margin-bottom: 20px;
+    padding: 4px 8px;
+  }
+
+  .hal-year-nav li a {
+    font-size: 1.3em;
+  }
+}
