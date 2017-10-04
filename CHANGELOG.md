@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+#7.3.7 - 2017-10-03
+
+### Changed
+- Inspection du code et conventions
+
+#7.3.6 - 2017-09-21
+
+### Fixed
+- ajout d'un parametre rows=500 sur les requetes pour écarter la limitation par défaut de 30 piublications
+
 #7.3.5 - 2017-09-07
 
 ### Changed

@@ -1,423 +1,558 @@
 <?php
 
+// @todo hook drupal_get_form to include forms only when necessary
+module_load_include('inc', 'amu_hal', 'includes/amu_hal_forms');
 
-module_load_include('php', 'amu_hal', 'includes/amu_hal_forms');
-
-// TODO commentaire md : hook_init et hook_install n'a t il pas été confondu?
+/**
+ * @todo hook_init et hook_install n'a t il pas été confondu?
+ */
 function amu_hal_init() {
-	variable_set ( 'amu_hal_url_ws', 'http://api.archives-ouvertes.fr/' );
+  variable_set('amu_hal_url_ws', 'http://api.archives-ouvertes.fr/');
 }
 
 /**
+ *  Encapsulate css within the module.
  *
- * @author m.dandonneau
- *        
- *         encapsulate css within the module
  */
-function amu_hal_preprocess(&$vars, $hook) {			
-		drupal_add_css( drupal_get_path( 'module', 'amu_hal' ) . '/css/publications.css' );	
+function amu_hal_preprocess() {
+  drupal_add_css(drupal_get_path('module', 'amu_hal') . '/css/publications.css');
 }
 
 /**
+ *  Make it compatible with multiblock module block instances.
  *
- * @author updated by m.dandonneau
- *        
- *         make it compatible with multiblock module block instances *        
- * 
  */
-
 function amu_hal_block_info() {
-	$blocks ['hal_publications'] = array (
-			'info' => t ( 'Publications HAL' ),
-			'mb_enabled' => TRUE 
-	);		
-	return $blocks;
+  $blocks['hal_publications'] = [
+    'info' => t('Publications HAL'),
+    'mb_enabled' => TRUE,
+  ];
+  return $blocks;
 }
 
 
-
-
 /**
+ * Compatibility with multiblock instances.
  *
- * @author updated by m.dandonneau
- *        
- *         compatiblitty with multiblock instances              	
- * 
+ * @param string $delta
+ * @param array $edit
+ *
+ * @return array
  */
-function amu_hal_block_view($delta = '', $edit = array()) {
-	$block = array ();
+function amu_hal_block_view($delta = '', $edit = []) {
+  $block = [];
 
-	if ($edit && isset ( $edit ['multiblock_delta'] )) {
-		$instanceSuffix = '_' . $edit ['multiblock_delta'] ['#value'];
-	}
-	else 
-		$instanceSuffix = '';
-	
-	switch ($delta) {
-		
-		case 'hal_publications' :
-			
-			$config = _amu_hal_get_configuration ( $instanceSuffix );
+  if ($edit && isset($edit['multiblock_delta'])) {
+    $instanceSuffix = '_' . $edit['multiblock_delta']['#value'];
+  }
+  else {
+    $instanceSuffix = '';
+  }
 
-			$url = _amu_hal_generateUrl ( $config );
-			$data = _amu_hal_apiRequest(  $url );					
-			_amu_hal_post_sort_datas($data->response->docs,$config);		
-			
-			$theme = $config->display_mode;
-			
-			$block ['subject'] = t ( 'publications' );
-			$block ['content'] = theme ( $theme, array (
-					'docs' => $data->response->docs,
-					'display' => 'teaser',
-					'suffix' => $instanceSuffix,
-					'config' => $config
-			) );
-			break;	
-	}
-	return $block;
+  switch ($delta) {
+    case 'hal_publications' :
+      $config = _amu_hal_get_configuration($instanceSuffix);
+      $url = _amu_hal_generate_url($config);
+      $data = _amu_hal_api_request($url);
+
+      _amu_hal_post_sort_datas($data->response->docs, $config);
+
+      $theme = $config->display_mode;
+
+      $block ['subject'] = t('publications');
+      $block ['content'] = theme($theme, [
+        'docs' => $data->response->docs,
+        'display' => 'teaser',
+        'suffix' => $instanceSuffix,
+        'config' => $config,
+      ]);
+      break;
+  }
+  return $block;
 }
 
 /**
+ * Enregistre le champ publis significatives sur blocs.
+ * @todo next version in POO with a $config object assigned when custom block
+ * class instanciated
  *
- * @author m.dandonneau
- *        
- *         enregistre le champ publis significatives sur blocs
- *         
- *        TODO next version in POO with a $config object assigned when custom block class instanciated
- *        
- * @param string $delta        	
- * 
+ * @param string $delta
+ * @param array $edit
  */
-function amu_hal_block_save($delta = '', $edit = array()) {
+function amu_hal_block_save($delta = '', $edit = []) {
 
-	if ($edit && isset ( $edit ['multiblock_delta'] )) {
-		$instanceSuffix = '_' . $edit ['multiblock_delta'] ['#value'];
-	}
-	else
-		$instanceSuffix = '';
-	
-	switch ($delta) {
-		case 'hal_publications' :
-			
-			_amu_hal_set_configuration ( $instanceSuffix, $edit, $delta );
-			break;
-	}
+  if ($edit && isset($edit['multiblock_delta'])) {
+    $instanceSuffix = '_' . $edit['multiblock_delta']['#value'];
+  }
+  else {
+    $instanceSuffix = '';
+  }
+
+  switch ($delta) {
+    case 'hal_publications' :
+      _amu_hal_set_configuration($instanceSuffix, $edit);
+      break;
+  }
 }
 
 /**
+ * Get block configuration.
  *
- * @author M.Dandonnneau
- *        
- *         get block configuration *        
- *       	
- * @return stdClass
+ * @param $instanceSuffix
+ * @return \stdClass
  */
 function _amu_hal_get_configuration($instanceSuffix) {
-	$config = new stdClass ();
-	// global module
-	$config->hal_last_pub_rows = variable_get ( 'hal_last_pub_rows' );
-	
-	// bloc instances
-	$config->retrieval_method_select = variable_get ( 'retrieval_method_select' . $instanceSuffix );
-	$config->docids_publis = variable_get ( 'docids_publis' . $instanceSuffix );
-	$config->halId_s = variable_get ( 'halId_s' . $instanceSuffix );
-	$config->hal_struct_id = variable_get ( 'structId_i' . $instanceSuffix );
-	$config->docType_s = variable_get ( 'docType_s' . $instanceSuffix );
-	$config->displayed_fields = variable_get ( 'displayed_fields' . $instanceSuffix );
-	$config->display_mode = variable_get ( 'display_mode' . $instanceSuffix );
+  $config = new stdClass ();
+  // global module
+  $config->hal_last_pub_rows = variable_get('hal_last_pub_rows');
 
-	return $config;
+  // bloc instances
+  $config->retrieval_method_select = variable_get('retrieval_method_select' . $instanceSuffix);
+  $config->docids_publis = variable_get('docids_publis' . $instanceSuffix);
+  $config->halId_s = variable_get('halId_s' . $instanceSuffix);
+  $config->hal_struct_id = variable_get('structId_i' . $instanceSuffix);
+  $config->docType_s = variable_get('docType_s' . $instanceSuffix);
+  $config->displayed_fields = variable_get('displayed_fields' . $instanceSuffix);
+  $config->display_mode = variable_get('display_mode' . $instanceSuffix);
+
+  return $config;
 }
 
+
 /**
+ * Save block instance settings.
  *
- * @author m.dandonneau
- *        
- *         save block instance settings
- *        
- * @param unknown $instanceSuffix        	
- * @param unknown $edit        	
+ * @param $instanceSuffix
+ * @param $edit
  */
-function _amu_hal_set_configuration($instanceSuffix, $edit, $delta) {
-
-	variable_set ( 'retrieval_method_select' . $instanceSuffix, $edit ['retrieval_method_select'] );
-	variable_set ( 'docids_publis' . $instanceSuffix, $edit ['docids_publis'] );
-	variable_set ( 'halId_s' . $instanceSuffix, $edit ['halId_s'] );
-	variable_set ( 'structId_i' . $instanceSuffix, $edit ['structId_i'] );
-	variable_set ( 'docType_s' . $instanceSuffix, $edit ['docType_s'] );
-	variable_set ( 'displayed_fields' . $instanceSuffix, $edit ['displayed_fields'] );
-	variable_set ( 'display_mode' . $instanceSuffix, $edit ['display_mode'] );
-
+function _amu_hal_set_configuration($instanceSuffix, $edit) {
+  variable_set('retrieval_method_select' . $instanceSuffix, $edit ['retrieval_method_select']);
+  variable_set('docids_publis' . $instanceSuffix, $edit ['docids_publis']);
+  variable_set('halId_s' . $instanceSuffix, $edit ['halId_s']);
+  variable_set('structId_i' . $instanceSuffix, $edit ['structId_i']);
+  variable_set('docType_s' . $instanceSuffix, $edit ['docType_s']);
+  variable_set('displayed_fields' . $instanceSuffix, $edit ['displayed_fields']);
+  variable_set('display_mode' . $instanceSuffix, $edit ['display_mode']);
 }
 
 
 /**
+ * @todo le halID de la collection es t'il réelement un champ de type  halId_s
+ * (voir le page detail qui utilise egalement ce champ) ps: cela ne change rien
+ * a la requete mais à la dénomination
  *
- * @author M.dandonneau *        
- *        
- *        TODO reduced nested conditions  in generateUrl / do while($loop==true) if/elseif implemented conditions
- *        TODO improve templates consistency with variable field possibilites &fl= *        
- *      	
- */
-function _amu_hal_generateUrl($config) {
-
-	$url = variable_get ( 'amu_hal_url_ws' ) . 'search/';
-	
-	if ($config->retrieval_method_select == 'by_user_fields') {
-		if (arg ( 0 ) == 'user' && arg ( 2 ) == '') {
-			$url .= '?';
-			$user = user_load ( arg ( 1 ) );			
-			
-			if ($user->field_selected_publis) {				
-				$url = substr ( $url, 0, - 1 );
-				$config->docids_publis = $user->field_selected_publis [und] [0] ["value"];
-				$config->retrieval_method_select = 'by_docids';
-			} 
-			
-			elseif ($user->field_identifiant_hal) {
-				$url .= 'fq=authIdHal_i:' . $user->field_identifiant_hal [und] [0] ["value"] . '';
-			} 
-			
-			elseif ($user->field_auth_hal) {
-				foreach ( $user->field_auth_hal [und] as $user_id ) {
-					$tabFormesAuteur [] = $user_id ["value"];
-				}
-				array_walk_recursive ( $tabFormesAuteur, function (&$value) {
-					$value = ucwords ( strtolower ( $value ) );
-				} );				
-				$authLastNameFirstName_s = '("';
-				$authLastNameFirstName_s .= implode ( '" OR "', $tabFormesAuteur );
-				$authLastNameFirstName_s .= '")';				
-				if ($config->halId_s != '')
-					$url .= $config->halId_s . '&fq=';
-				else
-					($config->hal_struct_id != '') ? $url .= 'fq=structId_i:' . $config->hal_struct_id : $url .= '';
-				
-				$url .= '&fq=authLastNameFirstName_s:' . urlencode ( $authLastNameFirstName_s ) . '';
-			} 
-
-			else {
-				$authLastNameFirstName_s = '("' . ucwords ( strtolower ( $user->name ) ) . '")';
-				if ($config->halId_s != '')
-					$url .= $config->halId_s . '?';
-				else
-					($config->hal_struct_id != '') ? $url .= '?fq=structId_i:' . $config->hal_struct_id : $url .= '';
-				
-				$url .= '&fq=authLastNameFirstName_s:' . urlencode ( $authLastNameFirstName_s ) . '';
-			}
-		}
-	}
-	
-	if ($config->retrieval_method_select == 'by_docids') {
-		// explode each lines
-		$tabdocids = preg_split ( "/\\r\\n|\\r|\\n/", $config->docids_publis );
-		$end = end ( $tabdocids );
-		$docidValues = '(';
-		foreach ( $tabdocids as $docid ) {
-			if ($end != $docid)
-				$docidValues .= $docid . ' OR ';
-			else
-				$docidValues .= $docid . ')';
-		}
-		$url .= '?fq=docid:' . urlencode ( $docidValues );
-		$url .= '&sort=docid+asc';
-	}
-	
-	if ($config->retrieval_method_select == 'by_multi_hal_attributes') {
-		// soit par collection soit structure
-		if ($config->halId_s != '')
-			$url .= $config->halId_s . '?';
-		else
-			($config->hal_struct_id != '') ? $url .= '?fq=structId_i:' . $config->hal_struct_id : $url .= '';
-		
-		if ($config->docType_s != '') {
-			$tabdocType_s = preg_split ( "/\\r\\n|\\r|\\n/", $config->docType_s );
-			$end = end ( $tabdocType_s );
-			$docType_sValues = '(';
-			foreach ( $tabdocType_s as $doctype ) {
-				if ($end != $doctype)
-					$docType_sValues .= $doctype . ' OR ';
-				else
-					$docType_sValues .= $doctype . ')';
-			}
-			$url .= '&q=docType_s:' . urlencode ( $docType_sValues );
-		}
-		$url .= '&rows=' . $config->hal_last_pub_rows;
-	}
-	
-	if ($config->retrieval_method_select == 'by_single_hal_id') {
-		$url .='?fq=halId_s:' . $config->hal_id ;		
-	}
-	
-	$url .= '&fl=' . $config->displayed_fields;
-	
-	if ($config->year)
-		$url.='&fq=producedDateY_i:'.$config->year;
-	
-	return $url;
-}
-
-/**
+ * @param string $delta
+ * @param array $edit
  *
- * @author M.dandonneau*        
- *       	
+ * @return array
  */
-function _amu_hal_apiRequest($url) {
-	$result = drupal_http_request ( $url );
-	return json_decode ( $result->data );
+function amu_hal_block_configure($delta = '', $edit = []) {
+  if ($edit && isset ($edit ['multiblock_delta'])) {
+    $instanceSuffix = '_' . $edit ['multiblock_delta'] ['#value'];
+  }
+  else {
+    $instanceSuffix = '';
+  }
+
+  $config = _amu_hal_get_configuration($instanceSuffix);
+
+  $form = [];
+  switch ($delta) {
+    case 'hal_publications' :
+
+      $internal_link = t('<a href="@help-page" target="_blank">Voir le module d\'aide - Chapitre Fonctionnalités disponibles </a>', ['@help-page' => url('admin/help/amu_hal')]);
+      $form ['retrieval_method_select'] = [
+        '#type' => 'select',
+        '#title' => t('Méthode d\'importation'),
+        "#options" => [
+          'by_docids' => t('Liste de publications déterminées'),
+          'by_multi_hal_attributes' => t('Publications d\'une structure ou collection'),
+          'by_user_fields' => t('Publications par auteur.e.s'),
+        ],
+        '#description' => t($internal_link),
+        '#default_value' => $config->retrieval_method_select,
+      ];
+
+      $internal_link = t('Pour établir une liste de documents, listez les docids des documents dans le champ Publications significatives. <a href="@help-page" target="blank">Voir le module d\'aide - Chapitre Publications significatives</a>', ['@help-page' => url('admin/help/amu_hal')]);
+      $form ['docids_publis'] = [
+        '#type' => 'textarea',
+        '#title' => t('Publications significatives'),
+        '#states' => [
+          'visible' => [
+            ':input[name="retrieval_method_select"]' => ['value' => 'by_docids'],
+          ],
+        ],
+        '#default_value' => $config->docids_publis,
+        '#description' => t($internal_link),
+      ];
+
+      $form ['halId_s'] = [
+        '#type' => 'textfield',
+        '#title' => t('Identifiant HAL de la collection'),
+        '#states' => [
+          'visible' => [
+            ':input[name="retrieval_method_select"]' => ['value' => 'by_multi_hal_attributes'],
+          ],
+        ],
+        '#description' => t('L\'identifiant de la collection est le HAL halId_s. Ce champ prévaut sur la champ Structure. Si ce champ est renseigné, l\'identifiant HAL de la structure ne sera pas considéré.'),
+
+        '#default_value' => (!empty ($config->halId_s)) ? $config->halId_s : '',
+      ];
+
+      $form ['structId_i'] = [
+        '#type' => 'textfield',
+        '#title' => t('Identifiant HAL de la structure'),
+        '#states' => [
+          'visible' => [
+            ':input[name="retrieval_method_select"]' => ['value' => 'by_multi_hal_attributes'],
+          ],
+        ],
+        '#description' => t('L\'identifiant de la structure est le HAL structId_i. Si le champ identifiant de la collection, est renseigné, l\'identifiant HAL de la structure ne sera pas considéré.'),
+        '#default_value' => (!empty ($config->hal_struct_id)) ? $config->hal_struct_id : '',
+      ];
+
+      $form['readonly'] = [
+        '#type' => 'textarea',
+        '#attributes' => ['readonly' => 'readonly'],
+        '#default_value' => 'La liste des publications doit être renseignée DANS LES FICHES AUTEUR. Ne renseignez ici que les champs Affichage qui déterminent la façon dont les publications s\'affichent dans les fiches auteur.',
+        '#states' => [
+          'visible' => [
+            ':input[name="retrieval_method_select"]' => ['value' => 'by_user_fields'],
+          ],
+        ],
+      ];
+
+      $external_link = t('Vous pouvez filtrer le type de document à afficher dans le bloc. Un type de document par ligne. <a href="@hal-doctypes" target="_blank">Voir la liste des types de documents HAL (docTypes)</a>.', ['@hal-doctypes' => 'https://api.archives-ouvertes.fr/ref/doctype']);
+      $form ['filters'] ['docType_s'] = [
+        '#type' => 'textarea',
+        '#title' => t('Filtres'),
+        '#states' => [
+          // Only show this field when the 'toggle_me' checkbox is enabled.
+          'visible' => [
+            ':input[name="retrieval_method_select"]' => ['value' => 'by_multi_hal_attributes'],
+          ],
+        ],
+        '#description' => t($external_link),
+        '#default_value' => (!empty ($config->docType_s)) ? $config->docType_s : '',
+      ];
+
+      $form ['display'] = [
+        '#type' => 'fieldset',
+        '#title' => t('Affichage'),
+      ];
+
+      $internal_link = t('Listez ici les champs qui apparaîtront dans la fiche de chaque publication. <b>Attention, le champ halId_s est obligatoire</b> <a href="@help-page" target="blank">Voir le module d\'aide - Chapitre Liste des champs HAL</a>', ['@help-page' => url('admin/help/amu_hal')]);
+      $form ['display'] ['displayed_fields'] = [
+        '#type' => 'textarea',
+        '#title' => t('Champs à afficher'),
+        '#description' => t($internal_link),
+        '#default_value' => (!empty ($config->displayed_fields) && '' != $config->displayed_fields) ? $config->displayed_fields : 'title_s,en_title_s,docid,label_s,en_label_s,docType_s,authIdHal_s,halId_s,structId_i,uri_s,keyword_s,en_keyword_s,authLastNameFirstName_s,journalTitle_s,abstract_s,en_abstract_s',
+      ];
+
+      $form ['display'] ['display_mode'] = [
+        '#type' => 'select',
+        '#title' => t('Type d\'affichage'),
+        '#description' => t('Academic display est un affichage sous forme de <strong>liste</strong>. Fancy display est un affichage sous forme de cartes colorées.'),
+        "#options" => [
+          'academic_display' => t('academic display'),
+          'fancy_display' => t('fancy display'),
+        ],
+        '#default_value' => variable_get('display_mode' . $instanceSuffix, ''),
+      ];
+      break;
+  }
+  return $form;
 }
 
+/**
+ * @param $form
+ * @param $form_state
+ */
+function _amu_hal_update_submit($form, &$form_state) {
+  $form_state ['rebuild'] = TRUE;
+
+  try {
+    variable_set('hal_last_pub_rows', $form_state ['values'] ['last_pub_rows_count']);
+    variable_set('hal_collection_id', $form_state ['values'] ['collection_id']);
+    variable_set('hal_date_start', $form_state ['values'] ['date_start']);
+    variable_set('hal_struct_id', $form_state ['values'] ['struct_id']);
+
+    $form_state ['result'] = [
+      '#markup' => '<h3>Modifications enregistrées avec succès</h3>',
+    ];
+  } catch (Exception $e) {
+    drupal_set_message($e, "error");
+  }
+}
 
 /**
- * 
- * @author m.dandonneau
- * 
- *  permet de trier les publis significatives dans l'ordre ou elles sont affichées dans le back office
- *  
- *  TODO array_map / array filter ? * 
- * 
+ * @todo reduced nested conditions  in generate_url / do while($loop==true)
+ * if/elseif implemented conditions
+ * TODO improve templates consistency with
+ * variable field possibilites &fl= *
+ *
+ * @param $config
+ *
+ * @return bool|string
+ */
+function _amu_hal_generate_url($config) {
+
+  $url = variable_get('amu_hal_url_ws') . 'search/';
+
+  if ($config->retrieval_method_select == 'by_user_fields') {
+    if (arg(0) == 'user' && arg(2) == '') {
+      $url .= '?';
+      $user = user_load(arg(1));
+
+      if ($user->field_selected_publis) {
+        $url = substr($url, 0, -1);
+        $config->docids_publis = $user->field_selected_publis["und"][0]["value"];
+        $config->retrieval_method_select = 'by_docids';
+      }
+
+      elseif ($user->field_identifiant_hal) {
+        $url .= 'fq=authIdHal_i:' . $user->field_identifiant_hal["und"][0]["value"] . '';
+      }
+
+      elseif ($user->field_auth_hal) {
+        foreach ($user->field_auth_hal["und"] as $user_id) {
+          $tabFormesAuteur[] = $user_id["value"];
+        }
+        array_walk_recursive($tabFormesAuteur, function (&$value) {
+          $value = ucwords(strtolower($value));
+        });
+        $authLastNameFirstName_s = '("';
+        $authLastNameFirstName_s .= implode('" OR "', $tabFormesAuteur);
+        $authLastNameFirstName_s .= '")';
+        if ($config->halId_s != '') {
+          $url .= $config->halId_s . '&fq=';
+        }
+        else {
+          ($config->hal_struct_id != '') ? $url .= 'fq=structId_i:' . $config->hal_struct_id : $url .= '';
+        }
+        $url .= '&fq=authLastNameFirstName_s:' . urlencode($authLastNameFirstName_s) . '';
+      }
+      else {
+        $authLastNameFirstName_s = '("' . ucwords(strtolower($user->name)) . '")';
+        if ($config->halId_s != '') {
+          $url .= $config->halId_s . '?';
+        }
+        else {
+          ($config->hal_struct_id != '') ? $url .= '?fq=structId_i:' . $config->hal_struct_id : $url .= '';
+        }
+        $url .= '&fq=authLastNameFirstName_s:' . urlencode($authLastNameFirstName_s) . '';
+      }
+    }
+  }
+
+  if ($config->retrieval_method_select == 'by_docids') {
+    // explode each lines
+    $tabdocids = preg_split("/\\r\\n|\\r|\\n/", $config->docids_publis);
+    $end = end($tabdocids);
+    $docidValues = '(';
+    foreach ($tabdocids as $docid) {
+      if ($end != $docid) {
+        $docidValues .= $docid . ' OR ';
+      }
+      else {
+        $docidValues .= $docid . ')';
+      }
+    }
+    $url .= '?fq=docid:' . urlencode($docidValues);
+    $url .= '&sort=docid+asc';
+  }
+
+  if ($config->retrieval_method_select == 'by_multi_hal_attributes') {
+    // soit par collection soit structure
+    if ($config->halId_s != '') {
+      $url .= $config->halId_s . '?';
+    }
+    else {
+      ($config->hal_struct_id != '') ? $url .= '?fq=structId_i:' . $config->hal_struct_id : $url .= '';
+    }
+
+    if ($config->docType_s != '') {
+      $tabdocType_s = preg_split("/\\r\\n|\\r|\\n/", $config->docType_s);
+      $end = end($tabdocType_s);
+      $docType_sValues = '(';
+      foreach ($tabdocType_s as $doctype) {
+        if ($end != $doctype) {
+          $docType_sValues .= $doctype . ' OR ';
+        }
+        else {
+          $docType_sValues .= $doctype . ')';
+        }
+      }
+      $url .= '&q=docType_s:' . urlencode($docType_sValues);
+    }
+    $url .= '&rows=' . $config->hal_last_pub_rows;
+  }
+
+  if ($config->retrieval_method_select == 'by_single_hal_id') {
+    $url .= '?fq=halId_s:' . $config->hal_id;
+  }
+  $url .= '&fl=' . $config->displayed_fields;
+
+  if ($config->year) {
+    $url .= '&fq=producedDateY_i:' . $config->year;
+  }
+  return $url;
+}
+
+/**
+ * @param $url
+ *
+ * @return array|mixed
+ */
+function _amu_hal_api_request($url) {
+  $result = drupal_http_request($url);
+  return json_decode($result->data);
+}
+
+/**
+ * Permet de trier les publis significatives dans l'ordre ou elles sont
+ * affichées dans le back office.
+ *
+ * @todo array_map / array filter ?
+ *
+ * @param $datas
+ * @param $config
  */
 function _amu_hal_post_sort_datas(&$datas, $config) {
-	
-	if ($config->retrieval_method_select == 'by_docids') {		
-		$tabdocids = preg_split ( "/\\r\\n|\\r|\\n/", $config->docids_publis );				
-		$ordered=array();		
-		foreach ( $tabdocids as $ordered_id ) {
-			foreach ( $datas as $doc )
-				if ($doc->docid == $ordered_id)
-					$ordered [] = $doc;
-		}
-		$datas=$ordered;		
-	}	
+  if ($config->retrieval_method_select == 'by_docids') {
+    $tabdocids = preg_split("/\\r\\n|\\r|\\n/", $config->docids_publis);
+    $ordered = [];
+    foreach ($tabdocids as $ordered_id) {
+      foreach ($datas as $doc) {
+        if ($doc->docid == $ordered_id) {
+          $ordered[] = $doc;
+        }
+      }
+    }
+    $datas = $ordered;
+  }
 }
 
-/**
- * Ne pas oublier le flush cache :)
- * Implements hook_theme().
- */
 function amu_hal_theme() {
-	return array (
-			'academic_display' => array (
-					'template' => 'block_academic_display',
-					'path' => drupal_get_path ( 'module', 'amu_hal' ) . '/templates' 
-			),
-			'fancy_display' => array (
-					'template' => 'block_fancy_display',
-					'path' => drupal_get_path ( 'module', 'amu_hal' ) . '/templates' 
-			),
-			'page_index' => array (
-					'template' => 'page_index_display',
-					'path' => drupal_get_path ( 'module', 'amu_hal' ) . '/templates' 
-			),
-			
-			'page_detail' => array (
-					'template' => 'page_detail_display',
-					'path' => drupal_get_path ( 'module', 'amu_hal' ) . '/templates' 
-			),			
-
-	);
+  return [
+    'academic_display' => [
+      'template' => 'block_academic_display',
+      'path' => drupal_get_path('module', 'amu_hal') . '/templates',
+    ],
+    'fancy_display' => [
+      'template' => 'block_fancy_display',
+      'path' => drupal_get_path('module', 'amu_hal') . '/templates',
+    ],
+    'page_index' => [
+      'template' => 'page_index_display',
+      'path' => drupal_get_path('module', 'amu_hal') . '/templates',
+    ],
+    'page_detail' => [
+      'template' => 'page_detail_display',
+      'path' => drupal_get_path('module', 'amu_hal') . '/templates',
+    ],
+  ];
 }
 
 /**
- * crée des routes pour l'affichage des listes de document par année et pour la description de chaque doc
+ * Crée des routes pour l'affichage des listes de document par année et pour la
+ * description de chaque doc.
  */
 function amu_hal_menu() {
-	$items ['docs/%/%'] = array (
-			'title' => 'publications',
-			'page callback' => '_amu_hal_page_index',
-			'page arguments' => array (1,2),
-			'type' => MENU_CALLBACK,
-			'access arguments' => array (
-					'access content' 
-			) 
-	);
-	
-	$items ['doc/%/%'] = array (
-			'title' => 'Publication',
-			'page callback' => '_amu_hal_page_detail',
-			'page arguments' => array (1,2),
-			'type' => MENU_CALLBACK,
-			'access arguments' => array (
-					'access content' 
-			) 
-	);
-	
-	$items ["admin/hal"] = array (
-			'type' => MENU_NORMAL_ITEM,
-			'menu_name' => 'management',
-			'title' => 'Ressources HAL',
-			'description' => 'Formulaire de gestion des ressources HAL',
-			'page callback' => 'drupal_get_form',
-			'page arguments' => array (
-					'form_admin_hal' 
-			),
-			'access arguments' => array (
-					'administrer publications HAL' 
-			) 
-	);
-	
-	return $items;
+  $items ['docs/%/%'] = [
+    'title' => 'publications',
+    'page callback' => '_amu_hal_page_index',
+    'page arguments' => [1, 2],
+    'type' => MENU_CALLBACK,
+    'access arguments' => [
+      'access content',
+    ],
+  ];
+
+  $items ['doc/%/%'] = [
+    'title' => 'Publication',
+    'page callback' => '_amu_hal_page_detail',
+    'page arguments' => [1, 2],
+    'type' => MENU_CALLBACK,
+    'access arguments' => [
+      'access content',
+    ],
+  ];
+
+  $items ["admin/hal"] = [
+    'type' => MENU_NORMAL_ITEM,
+    'menu_name' => 'management',
+    'title' => 'Ressources HAL',
+    'description' => 'Formulaire de gestion des ressources HAL',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => [
+      'form_admin_hal',
+    ],
+    'access arguments' => [
+      'administrer publications HAL',
+    ],
+  ];
+  return $items;
 }
 
 
 function _amu_hal_page_index($year, $instanceSuffix) {
-	$config = _amu_hal_get_configuration ( $instanceSuffix );
-	
-	//override some ot the initial block instance values
-	$config->retrieval_method_select ='by_multi_hal_attributes';
-	$config->docType_s='';
-	$config->year=$year;
-  $config->hal_last_pub_rows=2000;
-	
-	$url = _amu_hal_generateUrl ( $config );
-	$data = _amu_hal_apiRequest(  $url );
+  $config = _amu_hal_get_configuration($instanceSuffix);
 
-	$docs = $data->response->docs;
-	drupal_set_title ( t ( "Publications " ) . $year );
-	return theme ( 'page_index', array (
-			'docs' => $docs,
-			'display' => 'full' ,
-			'suffix' => $instanceSuffix
-	) );
+  //override some ot the initial block instance values
+  $config->retrieval_method_select = 'by_multi_hal_attributes';
+  $config->docType_s = '';
+  $config->year = $year;
+  $config->hal_last_pub_rows = 2000;
+
+  $url = _amu_hal_generate_url($config);
+  $data = _amu_hal_api_request($url);
+
+  $docs = $data->response->docs;
+  drupal_set_title(t("Publications ") . $year);
+  return theme('page_index', [
+    'docs' => $docs,
+    'display' => 'full',
+    'suffix' => $instanceSuffix,
+  ]);
 }
 
 function _amu_hal_page_detail($hal_id, $instanceSuffix) {
 
-	$config = _amu_hal_get_configuration ( $instanceSuffix );
-	
-	//override some ot the initial block instance values
-	$config->retrieval_method_select ='by_single_hal_id';
-	$config->hal_id=$hal_id;
-	$config->year=NULL;
-	
-	$url = _amu_hal_generateUrl ( $config );
-	$data = _amu_hal_apiRequest( $url );
-		
-	$doc = $data->response->docs;
-	
-	global $language;
-	if ($language->language == "fr") {
-		drupal_set_title ( $doc[0]->title_s[0] );
-	} else {
-		drupal_set_title ( $doc[0]->en_title_s[0] );
-	}
-	return theme ( 'page_detail', array (
-			'doc' => $doc,
-			'display' => 'full' ,
-			'suffix' => $instanceSuffix
-	) );
+  $config = _amu_hal_get_configuration($instanceSuffix);
+
+  //override some ot the initial block instance values
+  $config->retrieval_method_select = 'by_single_hal_id';
+  $config->hal_id = $hal_id;
+  $config->year = NULL;
+
+  $url = _amu_hal_generate_url($config);
+  $data = _amu_hal_api_request($url);
+
+  $doc = $data->response->docs;
+
+  global $language;
+  if ($language->language == "fr") {
+    drupal_set_title($doc[0]->title_s[0]);
+  }
+  else {
+    drupal_set_title($doc[0]->en_title_s[0]);
+  }
+  return theme('page_detail', [
+    'doc' => $doc,
+    'display' => 'full',
+    'suffix' => $instanceSuffix,
+  ]);
 }
 
 /**
  * Display help and module information.
- * @param path
- *   Which path of the site we're displaying help.
- * @param arg
- *   Array that holds the current path as would be returned from arg() function.
- * @return
- *   help text for the path.
+ *
+ * @param $path
+ *
+ * @return string
  */
-function amu_hal_help($path, $arg) {
+function amu_hal_help($path) {
   switch ($path) {
     case 'admin/config/administration/amu_hal':
       return '<p>' . t('The administration menu module provides a dropdown menu arranged for one- or two-click access to most administrative tasks and other common destinations (to users with the proper permissions). Use the settings below to customize the appearance of the menu.') . '</p>';
@@ -431,20 +566,23 @@ function amu_hal_help($path, $arg) {
       $output .= '<p>' . t('On peut imaginer par exemple un bloc (ou instance) affichant les dix dernières publications du laboratoire, un autre bloc (ou instance) affichant les publications significatives d\'un chercheur et un dernier bloc (ou instance) affichant les thèses du laboratoire pour l\'année 2016.') . '</p>';
       $output .= '<p>' . t('Parmi les paramétrages possibles: Collecte des publications selon l\'identifiant de collection ou de structure, collecte d\'une liste finie de documents précis (liste de docIds), ou collecte de publications depuis des forme-auteurs ou un idhal de chercheur ; Affichage des publications significatives pour un labo ou un utilisateur d\'après une liste de docIDs ; Tri des publications ; Filtres par type de document (docType) ; Sélection possible des champs à afficher ; Choix du mode d\'affichage.') . '</p>';
       $output .= '<p>' . '<h2>' . t(' Ajouter un nouveau bloc HAL') . '</h2>' . '</p>';
-      $output .= '<p>' . t('Chaque bloc HAL représentant une "instance", il s\'agit d\'ajouter une nouvelle instance pour chaque nouveau bloc HAL en allant dans <a href="@blocks">Structure - Blocs - Instances - Add Instance</a>', array('@blocks' => url('admin/structure/block/instances'))) . '</p>';
+      $output .= '<p>' . t('Chaque bloc HAL représentant une "instance", il s\'agit d\'ajouter une nouvelle instance pour chaque nouveau bloc HAL en allant dans <a href="@blocks">Structure - Blocs - Instances - Add Instance</a>', ['@blocks' => url('admin/structure/block/instances')]) . '</p>';
       $output .= '<p>' . t('Donner un titre à l\'instance dans "instance title" et choisissez Publications HAL dans la liste déroulante "Bloc type". Enregistrez.') . '</p>';
-      $output .= '<p>' . t('Configurez votre bloc en allant dans  <a href="@blocks">Structure - Blocs</a>', array('@block' => 'http://drupal.org/documentation/modules/block/', '@blocks' => url('admin/structure/block'))) . '</p>';
+      $output .= '<p>' . t('Configurez votre bloc en allant dans  <a href="@blocks">Structure - Blocs</a>', [
+          '@block' => 'http://drupal.org/documentation/modules/block/',
+          '@blocks' => url('admin/structure/block'),
+        ]) . '</p>';
       $output .= '<p>' . '<h2>' . t(' Publications significatives') . '</h2>' . '</p>';
       $output .= '<p>' . t(' Pour établir une liste de documents, listez les docids des documents dans le champ Publications significatives. ') . '</p>';
-      $external_link = t('<a href="@hal-docids" target="_blank">rendez-vous sur l\'API de HAL. </a>', array('@hal-docids' => 'https://api.archives-ouvertes.fr/search/?wt=xml&q=halId_s:%22hal-00700150%22'));
-      $output .= '<p>' .  t('Pour retrouver un docid d\'après un hal_id, ') . t($external_link ).  '</p>';
-      $output .= '<p>' .  t('Collez l\'hal_id à la fin de l\'URL, entre "" après halId_s:, en enlevant le numéro de version. Si par exemple l\'HAL_id est hal-00455477v2, ne collez que hal-00455477. Le doc_id apparaît dans la notice'  ) . '</p>';
+      $external_link = t('<a href="@hal-docids" target="_blank">rendez-vous sur l\'API de HAL. </a>', ['@hal-docids' => 'https://api.archives-ouvertes.fr/search/?wt=xml&q=halId_s:%22hal-00700150%22']);
+      $output .= '<p>' . t('Pour retrouver un docid d\'après un hal_id, ') . t($external_link) . '</p>';
+      $output .= '<p>' . t('Collez l\'hal_id à la fin de l\'URL, entre "" après halId_s:, en enlevant le numéro de version. Si par exemple l\'HAL_id est hal-00455477v2, ne collez que hal-00455477. Le doc_id apparaît dans la notice') . '</p>';
       $output .= '<p>' . '<h2>' . t(' Publications d\'une structure/collection') . '</h2>' . '</p>';
       $output .= '<p>' . t(' Indiquez l\'identifiant de la structure dans le champ approprié. Pour retrouver un identifiant de structure, connectez-vous à <a href="https://aurehal.archives-ouvertes.fr/structure/index">l\'Accès Unifié aux Référenteiels HAL - AUREHAL</a> et faires une recherche par Structure. Le structId_i apparaît à gauche du nom du laboratoire. Par exemple, 407059 pour le LNC ') . '</p>';
       $output .= '<p>' . '<h2>' . t(' Publications par auteur') . '</h2>' . '</p>';
       $output .= '<p>' . t('Nous vous encourageons vivement à créer votre idHAL, seule solution vous garantissant l\'affichage correct de vos publications') . '</p>';
       $output .= '<p>' . t('Dans votre fiche auteur, renseignez votre idHAL, vos différentes formes auteur et/ou listez vos publications significatives. (voir paragraphe Publications significatives ci dessus)') . '</p>';
-      $output .= '<p>' . t('Lorsque l\'option Publications par auteur est choisie dans un bloc HAL, chaque fiche auteur affiche ce bloc listant ses publications soit en fonction de son idHAL s\'il est renseigné, soit en fonction des différentes formes auteurs si elles sont renseignées, soit, à défaut, en fonction d\'un nom généér par le système d\'après les informations dont il dispose (couple nom-prénom). Si l\'auteur renseigne une liste de publications significatives, ce sont ces dernières qui s\'affichent de le bloc.' ) . '</p>';
+      $output .= '<p>' . t('Lorsque l\'option Publications par auteur est choisie dans un bloc HAL, chaque fiche auteur affiche ce bloc listant ses publications soit en fonction de son idHAL s\'il est renseigné, soit en fonction des différentes formes auteurs si elles sont renseignées, soit, à défaut, en fonction d\'un nom généér par le système d\'après les informations dont il dispose (couple nom-prénom). Si l\'auteur renseigne une liste de publications significatives, ce sont ces dernières qui s\'affichent de le bloc.') . '</p>';
       $output .= '<p>' . '<h2>' . t(' Listes des champs HAL') . '</h2>' . '</p>';
       $output .= '<table style="width:50%"><tr><th>' . 'Identifiant HAL du champ' . '</th><th>' . 'Champ correspondant' . '</th></tr>';
       $output .= '<tr><td>' . 'title_s' . '</td><td>' . t('Titre') . '</td></tr>';
@@ -463,9 +601,6 @@ function amu_hal_help($path, $arg) {
       $output .= '<tr><td>' . 'journalTitle_s' . '</td><td>' . t('Revue : Titre') . '</td></tr>';
       $output .= '<tr><td>' . 'abstract_s' . '</td><td>' . t('Résumé') . '</td></tr>';
       $output .= '<tr><td>' . 'en_abstract_s' . '</td><td>' . t('Résumé en anglais') . '</td></tr></table>';
-
-
-
 
       return $output;
   }

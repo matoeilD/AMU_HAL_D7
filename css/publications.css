@@ -3,10 +3,10 @@
 \*------------------------------------*/
 /**
 *  BLOCKS
-*   academic
-*   fancy
-*   skin
-*  MEDIA QUERIES
+*  Academic
+*  Fancy
+*  SKIN
+*  BACK-OFFICE
 *
 */
 
@@ -14,7 +14,6 @@
 /*------------------------------------*\
   ==BLOCKS
 \*------------------------------------*/
-
 
 .block-amu-hal {
   border-radius: 3px;
@@ -30,19 +29,17 @@
   color: white;
   content: "\f0d7  ";
   font-size: 66px;
-  font-family: "FontAwesome";
+  font-family: "FontAwesome", serif;
   line-height: 0;
 }
 
-li.hal-pub a {
-  color: #fff;
+.hal-pub a {
+  color: #FFF;
   text-decoration: none;
 }
 
 /* academic  */
 /* ------------- */
-
-
 
 .hal-pub a {
   word-break: break-all;
@@ -124,28 +121,26 @@ li.hal-pub a {
   flex-wrap: wrap;
 }
 
-/* fancy  */
+/* Fancy  */
 /* ------------- */
 
-ul.hal-pub-list-type-2 {
+.hal-pub-list-type-2 {
   display: flex;
-  margin-left: -20px;
+  margin:0;
+  padding:0;
   list-style: none;
-
   flex-wrap: wrap;
 }
 
-
-
-ul.hal-pub-list-type-2 li {
-  flex-basis: calc(35% - 30px);
+.hal-pub-list-type-2 li {
+  flex-basis: calc(33%);
 }
 
-ul.hal-pub-list-type-2 li a {
-  background-color: #ffffff;
+.hal-pub-list-type-2 li a {
+  background-color: #FFF;
 }
 
-ul.hal-pub-list-type-2 li.hal-pub > a {
+.hal-pub-list-type-2 li.hal-pub > a {
   display: inline-block;
   margin: 10px;
   padding: 10px;
@@ -154,114 +149,105 @@ ul.hal-pub-list-type-2 li.hal-pub > a {
   word-break: normal;
 }
 
-ul.hal-pub-list-type-2 li.hal-pub > a:hover {
+.hal-pub-list-type-2 li.hal-pub > a:hover {
   border-bottom: none;
 }
 
-ul.hal-pub-list-type-2 .hal-pub__title {
+.hal-pub-list-type-2 .hal-pub__title {
   margin-bottom: 10px;
   font-weight: bold;
   font-size: 1.3em;
 }
 
-ul.hal-pub-list-type-2 .hal-pub__authors {
+.hal-pub-list-type-2 .hal-pub__authors {
   margin-bottom: 10px;
   padding-left: 0;
   list-style: none;
 }
 
-ul.hal-pub-list-type-2 .hal-pub__authors li {
+.hal-pub-list-type-2 .hal-pub__authors li {
   display: inline;
 }
 
-ul.hal-pub-list-type-2 .hal-pub__authors li::after {
+.hal-pub-list-type-2 .hal-pub__authors li+li::before {
   content: ", ";
 }
 
-ul.hal-pub-list-type-2 .hal-pub__authors li:last-of-type::after {
-  content: " ";
-}
-
-
 .hal-more-pub a.more {
   display: block;
+  flex: 0 0 auto;
   margin: 0 auto 20px auto;
   padding: 15px 23px;
-  border-radius: 25px;
-  flex: 0 0 auto;
-  color: #fff;
   width: 25em;
+  border-radius: 25px;
+  color: #FFF;
   text-align: center;
   text-transform: uppercase;
-  transition: all 0.2s ease-in-out 0s;
   font-size: 14px;
   line-height: 1;
+  transition: all .2s ease-in-out 0s;
 }
 
 .hal-more-pub a.more:hover {
-  opacity: 0.7;
   text-decoration: none;
+  opacity: .7;
 }
 
-/* skin                                      */
-/* ------------------------------------------------------------------- */
-
-/*Default*/
-ul.hal-pub-list-type-2 li.hal-pub a:hover {
+/*------------------------------------*\
+  ==SKIN
+\*------------------------------------*/
+.hal-pub-list-type-2 li.hal-pub a:hover {
   background-color: rgb(51, 51, 51);
-  color: rgb(255,255,255);
+  color: rgb(255, 255, 255);
 }
 
 /*Pink */
 .hal-pink ul.hal-pub-list-type-2 li.hal-pub a:hover {
-  background-color: rgb(150,60,245);
-  color: rgb(255,255,255);
+  background-color: rgb(150, 60, 245);
+  color: rgb(255, 255, 255);
 }
 
-.hal-pink ul.hal-pub-list-type-2  a:hover .hal-pub__citation-ref {
-  color: rgb(180,180,180);
+.hal-pink ul.hal-pub-list-type-2 a:hover .hal-pub__citation-ref {
+  color: rgb(180, 180, 180);
 }
 
 .hal-pink.block a.more {
-  background-color: rgb(150,60,245);
+  background-color: rgb(150, 60, 245);
 }
-
 
 /*Bleu foncé */
 .hal-dark-blue ul.hal-pub-list-type-2 li.hal-pub a:hover {
-  background-color: rgb(18,72,114);
-  color: rgb(255,255,255);
+  background-color: rgb(18, 72, 114);
+  color: rgb(255, 255, 255);
 }
 
-.hal-dark-blue ul.hal-pub-list-type-2  a:hover .hal-pub__citation-ref {
-  color: rgb(180,180,180);
+.hal-dark-blue ul.hal-pub-list-type-2 a:hover .hal-pub__citation-ref {
+  color: rgb(180, 180, 180);
 }
 
 .hal-dark-blue.block a.more {
-  background-color: rgb(18,72,114);
+  background-color: rgb(18, 72, 114);
 }
 
 /*Cyan*/
 .hal-cyan ul.hal-pub-list-type-2 li.hal-pub a:hover {
-  background-color: rgb(54,194,242);
-  color: rgb(255,255,255);
+  background-color: rgb(54, 194, 242);
+  color: rgb(255, 255, 255);
 }
 
 .hal-cyan.block .content a.more {
-  background-color: rgb(54,194,242);
+  background-color: rgb(54, 194, 242);
 }
 
 /*orange*/
 .hal-orange ul.hal-pub-list-type-2 li.hal-pub a:hover {
   background-color: rgb(222, 105, 0);
-  color: rgb(255,255,255);
+  color: rgb(255, 255, 255);
 }
 
 .hal-orange.block .content a.more {
   background-color: rgb(222, 105, 0);
 }
-
-
 
 @media (max-width: 767px) {
   ul.hal-pub-list-type-2 li {
@@ -269,29 +255,20 @@ ul.hal-pub-list-type-2 li.hal-pub a:hover {
   }
 }
 
-/*back-office form*/
+
+/*------------------------------------*\
+  ==BACK-OFFICE
+\*------------------------------------*/
 
 .page-admin-structure-block-manage-multiblock textarea#edit-readonly {
-  cursor: default;
   border: none;
+  cursor: default;
 }
 
 .popup-style-white .popup-element-body div.inner a,
-.popup-style-white .popup-element-body div.inner a:hover{
+.popup-style-white .popup-element-body div.inner a:hover {
   color: #0071B9;
 }
-
-
-/*------------------------------------*\
-  ==MEDIA QUERIES
-\*------------------------------------*/
-
-
-
-/*@media (min-width: 767px) {*/
-/*.hal-year-nav {*/
-/*justify-content: space-between;*/
-/*}*/
 
 .block .hal-year-nav li {
   display: block;
