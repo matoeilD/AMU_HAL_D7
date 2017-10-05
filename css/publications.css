@@ -175,16 +175,12 @@
 
 .hal-more-pub a.more {
   display: block;
-  flex: 0 0 auto;
   margin: 0 auto 20px auto;
-  padding: 15px 23px;
   width: 25em;
   border-radius: 25px;
   color: #FFF;
-  text-align: center;
   text-transform: uppercase;
   font-size: 14px;
-  line-height: 1;
   transition: all .2s ease-in-out 0s;
 }
 
