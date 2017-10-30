@@ -18,6 +18,7 @@
         <li class="hal-pub">
           <a href="/doc/<?php print($doc->halId_s); ?>/<?php print($suffix); ?>">
             <?php print($doc->label_s); ?>
+
           </a>
         </li>
       <?php endforeach; ?>

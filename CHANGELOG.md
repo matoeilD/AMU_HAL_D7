@@ -14,8 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - ajout d'un parametre rows également sur les requetes par docids
 - bouton 'pus de publications' non visible poue les recherches par docids
 
-### Added
-- affichage anéchronologique par défaut , sauf pour la méthode par docid
+
 
 #7.3.7 - 2017-10-03
 

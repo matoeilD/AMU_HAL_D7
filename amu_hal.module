@@ -397,7 +397,8 @@ function _amu_hal_generate_url($config) {
   if ($config->year) {
     $url .= '&fq=producedDateY_i:' . $config->year;
   }
-  $url .= '&sort=journalDate_s+asc';
+  //$url .= '&sort=submittedDate_tdate+asc';
+
 
   return $url;
 }
