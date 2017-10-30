@@ -22,7 +22,7 @@
         </li>
       <?php endforeach; ?>
     </ul>
-    <?php if ($config->retrieval_method_select != 'by_user_fields'): ?>
+    <?php if (($config->retrieval_method_select != 'by_user_fields')&&($config->retrieval_method_select != 'by_docids')): ?>
       <div class="hal-more-pub">
         <a class="more" href="/docs/<?php print(date('Y')); ?>/<?php print($suffix); ?>">
           Plus de publications

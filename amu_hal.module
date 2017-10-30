@@ -359,7 +359,8 @@ function _amu_hal_generate_url($config) {
       }
     }
     $url .= '?fq=docid:' . urlencode($docidValues);
-    $url .= '&sort=docid+asc';
+    $url .= '&rows=2000';
+
   }
 
   if ($config->retrieval_method_select == 'by_multi_hal_attributes') {
@@ -396,6 +397,8 @@ function _amu_hal_generate_url($config) {
   if ($config->year) {
     $url .= '&fq=producedDateY_i:' . $config->year;
   }
+  $url .= '&sort=journalDate_s+asc';
+
   return $url;
 }
 
@@ -419,6 +422,7 @@ function _amu_hal_api_request($url) {
  * @param $config
  */
 function _amu_hal_post_sort_datas(&$datas, $config) {
+
   if ($config->retrieval_method_select == 'by_docids') {
     $tabdocids = preg_split("/\\r\\n|\\r|\\n/", $config->docids_publis);
     $ordered = [];

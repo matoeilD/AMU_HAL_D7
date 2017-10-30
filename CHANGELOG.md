@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+
+
+#7.3.8 - 2017-10-30
+
+### Fixed
+- ajout d'un parametre rows également sur les requetes par docids
+- bouton 'pus de publications' non visible poue les recherches par docids
+
+### Added
+- affichage anéchronologique par défaut , sauf pour la méthode par docid
+
 #7.3.7 - 2017-10-03
 
 ### Changed
