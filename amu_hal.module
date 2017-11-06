@@ -246,7 +246,7 @@ function amu_hal_block_configure($delta = '', $edit = []) {
         '#type' => 'textarea',
         '#title' => t('Champs à afficher'),
         '#description' => t($internal_link),
-        '#default_value' => (!empty ($config->displayed_fields) && '' != $config->displayed_fields) ? $config->displayed_fields : 'title_s,en_title_s,docid,label_s,en_label_s,docType_s,authIdHal_s,halId_s,structId_i,uri_s,keyword_s,en_keyword_s,authLastNameFirstName_s,journalTitle_s,abstract_s,en_abstract_s',
+        '#default_value' => (!empty ($config->displayed_fields) && '' != $config->displayed_fields) ? $config->displayed_fields : 'title_s,en_title_s,docid,label_s,en_label_s,docType_s,authIdHal_s,halId_s,structId_i,uri_s,keyword_s,en_keyword_s,authLastNameFirstName_s,journalTitle_s,abstract_s,en_abstract_s,producedDate_tdate',
       ];
 
       $form ['display'] ['display_mode'] = [
@@ -397,8 +397,7 @@ function _amu_hal_generate_url($config) {
   if ($config->year) {
     $url .= '&fq=producedDateY_i:' . $config->year;
   }
-  //$url .= '&sort=submittedDate_tdate+asc';
-
+  $url .= '&sort=producedDate_tdate+desc';
 
   return $url;
 }
