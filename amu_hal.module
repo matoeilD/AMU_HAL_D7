@@ -333,15 +333,9 @@ function _amu_hal_generate_url($config) {
   if ($config->retrieval_method_select == 'by_docids') {
     // explode each lines
     $tabdocids = preg_split("/\\r\\n|\\r|\\n/", $config->docids_publis);
-    $end = end($tabdocids);
-    $docidValues = '(';
-    foreach ($tabdocids as $docid) {
-      if ($end != $docid) {
-        $docidValues .= $docid . ' OR ';
-      }
-      else {
-        $docidValues .= $docid . ')';
-      }
+    $docidValues='';
+    if (count($tabdocids) > 0) {
+         $docidValues= '(' . implode(' OR ', $tabdocids) . ')';
     }
     $url .= '?fq=docid:' . urlencode($docidValues);
     $url .= '&rows=2000';
@@ -358,16 +352,11 @@ function _amu_hal_generate_url($config) {
 
     if ($config->docType_s != '') {
       $tabdocType_s = preg_split("/\\r\\n|\\r|\\n/", $config->docType_s);
-      $end = end($tabdocType_s);
-      $docType_sValues = '(';
-      foreach ($tabdocType_s as $doctype) {
-        if ($end != $doctype) {
-          $docType_sValues .= $doctype . ' OR ';
-        }
-        else {
-          $docType_sValues .= $doctype . ')';
-        }
+      $docType_sValues='';
+      if (count($tabdocType_s) > 0) {
+        $docType_sValues= '(' . implode(' OR ', $tabdocType_s) . ')';
       }
+
       $url .= '&q=docType_s:' . urlencode($docType_sValues);
     }
     $url .= '&rows=' . $config->hal_last_pub_rows;
@@ -560,7 +549,7 @@ function amu_hal_help($path) {
           '@blocks' => url('admin/structure/block'),
         ]) . '</p>';
       $output .= '<p>' . '<h2>' . t(' Publications significatives') . '</h2>' . '</p>';
-      $output .= '<p>' . t(' Pour établir une liste de documents, listez les docids des documents dans le champ Publications significatives. ') . '</p>';
+      $output .= '<p>' . t(' Pour établir une liste de documents, listez les docids des documents dans le champ Publications significatives. (un par ligne) ') . '</p>';
       $external_link = t('<a href="@hal-docids" target="_blank">rendez-vous sur l\'API de HAL. </a>', ['@hal-docids' => 'https://api.archives-ouvertes.fr/search/?wt=xml&q=halId_s:%22hal-00700150%22']);
       $output .= '<p>' . t('Pour retrouver un docid d\'après un hal_id, ') . t($external_link) . '</p>';
       $output .= '<p>' . t('Collez l\'hal_id à la fin de l\'URL, entre "" après halId_s:, en enlevant le numéro de version. Si par exemple l\'HAL_id est hal-00455477v2, ne collez que hal-00455477. Le doc_id apparaît dans la notice') . '</p>';
