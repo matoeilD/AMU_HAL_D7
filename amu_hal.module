@@ -296,7 +296,7 @@ function _amu_hal_generate_url($config) {
       }
 
       elseif ($user->field_identifiant_hal) {
-        $url .= 'fq=authIdHal_i:' . $user->field_identifiant_hal["und"][0]["value"] . '';
+        $url .= 'fq=authIdHal_i:' . $user->field_identifiant_hal["und"][0]["value"];
       }
 
       elseif ($user->field_auth_hal) {
@@ -315,7 +315,7 @@ function _amu_hal_generate_url($config) {
         else {
           ($config->hal_struct_id != '') ? $url .= 'fq=structId_i:' . $config->hal_struct_id : $url .= '';
         }
-        $url .= '&fq=authLastNameFirstName_s:' . urlencode($authLastNameFirstName_s) . '';
+        $url .= '&fq=authLastNameFirstName_s:' . urlencode($authLastNameFirstName_s);
       }
       else {
         $authLastNameFirstName_s = '("' . ucwords(strtolower($user->name)) . '")';
@@ -325,7 +325,7 @@ function _amu_hal_generate_url($config) {
         else {
           ($config->hal_struct_id != '') ? $url .= '?fq=structId_i:' . $config->hal_struct_id : $url .= '';
         }
-        $url .= '&fq=authLastNameFirstName_s:' . urlencode($authLastNameFirstName_s) . '';
+        $url .= '&fq=authLastNameFirstName_s:' . urlencode($authLastNameFirstName_s);
       }
     }
   }
