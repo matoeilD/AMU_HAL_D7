@@ -23,7 +23,7 @@
 .block-amu-hal::before {
   position: relative;
   top: -3px;
-  left: 5%;
+  left: 50%;
   visibility: visible;
   margin-left: -19px;
   color: white;

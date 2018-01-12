@@ -1,6 +1,6 @@
 <?php
 
-// @todo hook drupal_get_form to include forms only when necessary
+
 module_load_include('inc', 'amu_hal', 'includes/amu_hal_forms');
 
 /**
@@ -11,7 +11,7 @@ function amu_hal_init() {
 }
 
 /**
- *  Encapsulate css within the module.
+ *  Encapsulation du CSS dans le module
  *
  */
 function amu_hal_preprocess() {
@@ -19,7 +19,7 @@ function amu_hal_preprocess() {
 }
 
 /**
- *  Make it compatible with multiblock module block instances.
+ * Compatibilité avec les instances de bloc permises par le module multiblock
  *
  */
 function amu_hal_block_info() {
@@ -32,7 +32,7 @@ function amu_hal_block_info() {
 
 
 /**
- * Compatibility with multiblock instances.
+ * Compatibilité avec les instances de bloc permises par le module multiblock
  *
  * @param string $delta
  * @param array $edit
@@ -40,23 +40,21 @@ function amu_hal_block_info() {
  * @return array
  */
 function amu_hal_block_view($delta = '', $edit = []) {
-  $block = [];
-
-  if ($edit && isset($edit['multiblock_delta'])) {
-    $instanceSuffix = '_' . $edit['multiblock_delta']['#value'];
-  }
-  else {
-    $instanceSuffix = '';
-  }
-
   switch ($delta) {
     case 'hal_publications' :
+      $block = [];
+      $instanceSuffix = '';
+      if ($edit && isset ($edit['multiblock_delta'])) {
+        $instanceSuffix = '_' . $edit['multiblock_delta']['#value'];
+      }
+
       $config = _amu_hal_get_configuration($instanceSuffix);
       $url = _amu_hal_generate_url($config);
       $data = _amu_hal_api_request($url);
 
-      _amu_hal_post_sort_datas($data->response->docs, $config);
-
+      if ($config->retrieval_method_select == 'by_docids') {
+        _amu_hal_post_sort_datas($data->response->docs, $config);
+      }
       $theme = $config->display_mode;
 
       $block ['subject'] = t('publications');
@@ -73,30 +71,24 @@ function amu_hal_block_view($delta = '', $edit = []) {
 
 /**
  * Enregistre le champ publis significatives sur blocs.
- * @todo next version in POO with a $config object assigned when custom block
- * class instanciated
  *
  * @param string $delta
  * @param array $edit
  */
 function amu_hal_block_save($delta = '', $edit = []) {
-
-  if ($edit && isset($edit['multiblock_delta'])) {
-    $instanceSuffix = '_' . $edit['multiblock_delta']['#value'];
-  }
-  else {
-    $instanceSuffix = '';
-  }
-
   switch ($delta) {
     case 'hal_publications' :
+      $instanceSuffix = '';
+      if ($edit && isset ($edit['multiblock_delta'])) {
+        $instanceSuffix = '_' . $edit['multiblock_delta']['#value'];
+      }
       _amu_hal_set_configuration($instanceSuffix, $edit);
       break;
   }
 }
 
 /**
- * Get block configuration.
+ * Récupère les paramètres pour l'instance du bloc
  *
  * @param $instanceSuffix
  * @return \stdClass
@@ -120,26 +112,26 @@ function _amu_hal_get_configuration($instanceSuffix) {
 
 
 /**
- * Save block instance settings.
+ * Définit les paramètres pour l'instance du bloc
  *
  * @param $instanceSuffix
  * @param $edit
  */
 function _amu_hal_set_configuration($instanceSuffix, $edit) {
-  variable_set('retrieval_method_select' . $instanceSuffix, $edit ['retrieval_method_select']);
-  variable_set('docids_publis' . $instanceSuffix, $edit ['docids_publis']);
-  variable_set('halId_s' . $instanceSuffix, $edit ['halId_s']);
-  variable_set('structId_i' . $instanceSuffix, $edit ['structId_i']);
-  variable_set('docType_s' . $instanceSuffix, $edit ['docType_s']);
-  variable_set('displayed_fields' . $instanceSuffix, $edit ['displayed_fields']);
-  variable_set('display_mode' . $instanceSuffix, $edit ['display_mode']);
+  variable_set('retrieval_method_select' . $instanceSuffix, $edit['retrieval_method_select']);
+  variable_set('docids_publis' . $instanceSuffix, $edit['docids_publis']);
+  variable_set('halId_s' . $instanceSuffix, $edit['halId_s']);
+  variable_set('structId_i' . $instanceSuffix, $edit['structId_i']);
+  variable_set('docType_s' . $instanceSuffix, $edit['docType_s']);
+  variable_set('displayed_fields' . $instanceSuffix, $edit['displayed_fields']);
+  variable_set('display_mode' . $instanceSuffix, $edit['display_mode']);
 }
 
 
 /**
- * @todo le halID de la collection es t'il réelement un champ de type  halId_s
- * (voir le page detail qui utilise egalement ce champ) ps: cela ne change rien
- * a la requete mais à la dénomination
+ * @todo le halID de la collection est il réellement un champ de type  halId_s
+ * (voir la page detail qui utilise egalement ce champ) ps: cela ne change rien
+ * a la requête mais à la dénomination.
  *
  * @param string $delta
  * @param array $edit
@@ -147,18 +139,14 @@ function _amu_hal_set_configuration($instanceSuffix, $edit) {
  * @return array
  */
 function amu_hal_block_configure($delta = '', $edit = []) {
-  if ($edit && isset ($edit ['multiblock_delta'])) {
-    $instanceSuffix = '_' . $edit ['multiblock_delta'] ['#value'];
-  }
-  else {
-    $instanceSuffix = '';
-  }
-
-  $config = _amu_hal_get_configuration($instanceSuffix);
-
-  $form = [];
   switch ($delta) {
     case 'hal_publications' :
+      $instanceSuffix = '';
+      if ($edit && isset ($edit['multiblock_delta'])) {
+        $instanceSuffix = '_' . $edit['multiblock_delta']['#value'];
+      }
+      $config = _amu_hal_get_configuration($instanceSuffix);
+      $form = [];
 
       $internal_link = t('<a href="@help-page" target="_blank">Voir le module d\'aide - Chapitre Fonctionnalités disponibles </a>', ['@help-page' => url('admin/help/amu_hal')]);
       $form ['retrieval_method_select'] = [
@@ -286,17 +274,14 @@ function _amu_hal_update_submit($form, &$form_state) {
 }
 
 /**
- * @todo reduced nested conditions  in generate_url / do while($loop==true)
- * if/elseif implemented conditions
- * TODO improve templates consistency with
- * variable field possibilites &fl= *
+ * @todo reduire si possible les conidtions imbriquées et la complexité
+ * @todo les différentes possiblités du &fl et le match avec les templates;cela n'a pas été testé de manière fine, notamment avec le multilingue
  *
  * @param $config
  *
  * @return bool|string
  */
 function _amu_hal_generate_url($config) {
-
   $url = variable_get('amu_hal_url_ws') . 'search/';
 
   if ($config->retrieval_method_select == 'by_user_fields') {
@@ -360,7 +345,6 @@ function _amu_hal_generate_url($config) {
     }
     $url .= '?fq=docid:' . urlencode($docidValues);
     $url .= '&rows=2000';
-
   }
 
   if ($config->retrieval_method_select == 'by_multi_hal_attributes') {
@@ -392,11 +376,12 @@ function _amu_hal_generate_url($config) {
   if ($config->retrieval_method_select == 'by_single_hal_id') {
     $url .= '?fq=halId_s:' . $config->hal_id;
   }
-  $url .= '&fl=' . $config->displayed_fields;
 
   if ($config->year) {
     $url .= '&fq=producedDateY_i:' . $config->year;
   }
+
+  $url .= '&fl=' . $config->displayed_fields;
   $url .= '&sort=producedDate_tdate+desc';
 
   return $url;
@@ -422,8 +407,6 @@ function _amu_hal_api_request($url) {
  * @param $config
  */
 function _amu_hal_post_sort_datas(&$datas, $config) {
-
-  if ($config->retrieval_method_select == 'by_docids') {
     $tabdocids = preg_split("/\\r\\n|\\r|\\n/", $config->docids_publis);
     $ordered = [];
     foreach ($tabdocids as $ordered_id) {
@@ -434,8 +417,8 @@ function _amu_hal_post_sort_datas(&$datas, $config) {
       }
     }
     $datas = $ordered;
-  }
 }
+
 
 function amu_hal_theme() {
   return [
@@ -503,7 +486,7 @@ function amu_hal_menu() {
 function _amu_hal_page_index($year, $instanceSuffix) {
   $config = _amu_hal_get_configuration($instanceSuffix);
 
-  //override some ot the initial block instance values
+  //surcharge certaines des valeurs des instances de blocs
   $config->retrieval_method_select = 'by_multi_hal_attributes';
   $config->docType_s = '';
   $config->year = $year;
@@ -550,7 +533,7 @@ function _amu_hal_page_detail($hal_id, $instanceSuffix) {
 }
 
 /**
- * Display help and module information.
+ * Documentation relative au module consultable depuis le back office
  *
  * @param $path
  *

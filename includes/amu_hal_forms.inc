@@ -2,7 +2,7 @@
 
 
 /**
- * @todo check up module default values and how they are used
+ * @todo valeurs par defaut globales des configs du module et comment elles sont utilisées et comment elles interagissent avec les configs des instances de blocs à analyser plus finement
  *
  * @param $form
  * @param $form_state
